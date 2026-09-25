@@ -128,8 +128,7 @@ def main() -> int:
         rel_raw = os.path.relpath(raw_path, index_dir)
         all_index_entries.append(session_index_entry(session, rel_md, rel_html, rel_raw))
 
-        n_user = sum(1 for t in session.turns if t.role == "user")
-        n_assistant = sum(1 for t in session.turns if t.role == "assistant")
+        n_user, n_assistant = session.counts
         all_browser_entries.append(
             {
                 "session_id": session.session_id,

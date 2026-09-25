@@ -1,12 +1,31 @@
-# Claude Code Chat Archive
+<div align="center">
 
-**Claude Code deletes your session transcripts after 30 days. This archives them permanently, and makes them browsable and searchable.**
+<img src="docs/banner.svg" alt="Claude Code Chat Archive" width="100%">
 
-Claude Code stores every conversation as a `.jsonl` file under `~/.claude/projects`, then prunes anything older than `cleanupPeriodDays` (default: **30**). Once pruned, those conversations are gone. This tool exports them first — as readable Markdown and HTML — and keeps them in an append-only archive that survives the prune.
+<br>
 
-Python 3.9+, standard library only. Nothing to install, nothing sent anywhere.
+**Claude Code deletes your session transcripts after 30 days.**<br>
+**This archives them permanently — and makes them beautiful to read.**
 
-## Quick start
+<br>
+
+![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)
+![Dependencies](https://img.shields.io/badge/dependencies-none-2ea44f)
+![Offline](https://img.shields.io/badge/network_calls-zero-0f766e)
+![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Linux%20%7C%20Windows-8b87ff)
+![License](https://img.shields.io/badge/license-MIT-blue)
+
+</div>
+
+---
+
+## 😱 The problem
+
+Claude Code writes every conversation to `~/.claude/projects/*.jsonl`, then **silently deletes anything older than `cleanupPeriodDays` — which defaults to 30.**
+
+That research session where you finally cracked the architecture? The debugging marathon with the fix you'd never reconstruct? Gone, with no warning and no undo.
+
+## ✨ The fix
 
 ```bash
 git clone https://github.com/kxzongoing/claude-code-chat-archive.git
@@ -14,13 +33,57 @@ cd claude-code-chat-archive
 python3 export_claude_chats.py
 ```
 
-Then open `index.html` in a browser. That's it.
+Then open **`index.html`**. That's the whole setup — Python 3.9+, zero dependencies, zero network calls.
 
-The first run exports everything currently in `~/.claude/projects`. Every later run picks up what's new and leaves the rest alone.
+Every later run picks up what's new and leaves the rest alone. **Once a conversation is archived, it stays — even after Claude Code deletes the original.**
 
-## Stop losing chats first
+---
 
-Before anything else, widen Claude Code's retention window. Add this to `~/.claude/settings.json`:
+## 🖥️ What you get
+
+### 📚 A browser for everything
+
+Open `index.html` for a two-pane reader: sessions grouped by **Today / Yesterday / Earlier this week**, live filtering, and full keyboard navigation — <kbd>/</kbd> to search, <kbd>↑</kbd><kbd>↓</kbd> or <kbd>j</kbd><kbd>k</kbd> to move, <kbd>Esc</kbd> to clear. Light and dark themes, remembered between visits.
+
+### 💬 Conversations that read like conversations
+
+Messages render as **actual prose** — headings, lists, tables, and syntax-styled code — not walls of preformatted text. Three lanes stay visually distinct so you always know who said what:
+
+| Lane | Appearance |
+|---|---|
+| 🧑 **You** | Filled card with an accent border — the thing you scan for |
+| 🤖 **Claude** | Clean prose, unadorned |
+| ⚙️ **Tools** | Muted monospace folds, collapsed by default, each showing its own output |
+
+Tool results are nested **inside the call that produced them** — so a 500-turn session scans in seconds, and nothing machine-generated is ever mislabelled as something you typed.
+
+### 🔍 Search that actually finds things
+
+`index/search.html` does instant client-side search across every turn, bash command and file edit — filter by type, jump straight to the moment in the conversation. No server, no index to build.
+
+### 📦 Plain files underneath
+
+Everything is JSON and Markdown you can grep, diff, or feed to other tools:
+
+| Path | Contents |
+|---|---|
+| `sessions/<project>/<id>/` | `raw.json`, `conversation.md`, `conversation.html` |
+| `index/session_index.{json,md}` | One row per session — title, project, duration, links |
+| `extracts/tool_invocations.{json,md}` | Every tool call, matched with its result |
+| `extracts/file_modifications.{json,md}` | Every Edit / Write / MultiEdit / NotebookEdit |
+| `extracts/bash_commands.{json,md}` | Every Bash call with stdout and stderr |
+| `extracts/architectural_decisions.{json,md}` | Heuristically surfaced decision points |
+| `timeline/timeline.{json,md}` | All of the above, merged and sorted by date |
+
+Session UUIDs and original timestamps survive everywhere — filenames, table rows, HTML anchors.
+
+> **Note** — `architectural_decisions` is a heuristic (plan proposals, `AskUserQuestion` points, decision language). Read it for signal, not as a curated list.
+
+---
+
+## 🛡️ Stop losing chats in the first place
+
+Before anything else, widen Claude Code's retention window in `~/.claude/settings.json`:
 
 ```json
 {
@@ -28,45 +91,40 @@ Before anything else, widen Claude Code's retention window. Add this to `~/.clau
 }
 ```
 
-This tool can only archive what still exists when it runs. Raising the retention window buys you a year of margin; running the exporter regularly (see below) closes the gap entirely.
+This tool can only archive what still exists when it runs. A year of retention buys you margin; running it on a schedule closes the gap completely:
 
-> **Already lost chats?** If you had exported them before, they aren't gone — see [Recovering pruned sessions](#recovering-pruned-sessions).
+**macOS / Linux** — `crontab -e`:
 
-## Keep it running
-
-The exporter only captures what's live at the moment it runs. To never miss a session, run it on a schedule.
-
-**macOS / Linux (cron)** — `crontab -e`, then:
-
-```
+```cron
 0 20 * * * cd /path/to/claude-code-chat-archive && /usr/bin/python3 export_claude_chats.py >/dev/null 2>&1
 ```
 
-**Windows** — Task Scheduler, daily, action `python3 export_claude_chats.py`, "Start in" set to the checkout.
+**Windows** — Task Scheduler → daily → `python3 export_claude_chats.py`, "Start in" set to the checkout.
 
-## What you get
+---
 
-Open **`index.html`** — a sidebar lists every chat newest-first; click to read it, filter by title or project once the list grows.
+## ♻️ Already lost chats? Maybe not.
 
-Open **`index/search.html`** — client-side substring search across every turn, bash command, and file edit, linking back to the source conversation. No server needed.
+If you archived sessions before and they've vanished from your index, **they are probably still on disk.** Earlier versions rebuilt the index only from live sources, so pruned sessions dropped out even though `sessions/` still held every byte.
 
-Everything else is plain JSON and Markdown, easy to grep or feed to other tools:
+Just run it again:
 
-| Path | Contents |
-|---|---|
-| `sessions/<project>/<id>/` | `raw.json` (original records), `conversation.md`, `conversation.html` |
-| `index/session_index.{json,md}` | One row per session: title, project, duration, links |
-| `extracts/tool_invocations.{json,md}` | Every tool call, matched with its result |
-| `extracts/file_modifications.{json,md}` | Every Edit/Write/MultiEdit/NotebookEdit |
-| `extracts/bash_commands.{json,md}` | Every Bash call with stdout/stderr |
-| `extracts/architectural_decisions.{json,md}` | Heuristically pulled decision points |
-| `timeline/timeline.{json,md}` | All of the above merged, sorted, grouped by date |
+```bash
+python3 export_claude_chats.py
+```
 
-Session UUIDs and original timestamps are preserved everywhere — filenames, table rows, HTML anchors.
+The backfill pass replays every session in `manifest.json` from its archived `raw.json`:
 
-`architectural_decisions` is a heuristic (plan proposals, `AskUserQuestion` points, decision-language in assistant text). Read it for signal, not as a curated list.
+```
+Sessions found: 23 | rendered: 2 | unchanged (skipped): 21 | restored from archive: 28 | failed: 0
+Total sessions in index: 51
+```
 
-## Options
+As long as `manifest.json` and `sessions/` survive, nothing is lost.
+
+---
+
+## ⚙️ Options
 
 ```
 --root <dir>         Source projects dir (default: ~/.claude/projects)
@@ -75,40 +133,23 @@ Session UUIDs and original timestamps are preserved everywhere — filenames, ta
 --force              Re-render every session, ignoring the manifest
 ```
 
-## How it stays safe
+## 🔒 How it stays safe
 
-**Incremental.** `manifest.json` records a sha256 of each session's source `.jsonl`. Unchanged sessions are skipped; new or edited ones are re-rendered.
+**Incremental** — `manifest.json` records a sha256 per source file. Unchanged sessions are skipped.
 
-**Append-only.** This is the important part. Aggregate documents are rebuilt on every run from the union of *live sources* **and** *every session still listed in `manifest.json`*, replayed from its archived `raw.json`. So when Claude Code prunes a source file, the session stays in your index anyway. **Once exported, a conversation is in the archive permanently.**
+**Append-only** — aggregates rebuild from the union of live sources **and** every session in the manifest, replayed from its archived `raw.json`. Claude Code's prune can't remove anything from your index.
 
-**Local.** Reads `~/.claude/projects`, writes to disk. No network calls, no telemetry, no dependencies.
+**Local** — reads `~/.claude/projects`, writes to disk. No network, no telemetry, no dependencies. Transcript text is escaped before rendering, and `javascript:` URLs are stripped.
 
-### Recovering pruned sessions
+---
 
-If you exported sessions in the past and they've since disappeared from your index, they are almost certainly still on disk. Earlier versions of this tool rebuilt the index only from live sources, so pruned sessions silently dropped out even though `sessions/` still held them.
+## 🚨 Privacy — read this before pushing anywhere
 
-Just run the exporter again:
+**Your exported conversations are private. Never commit them.**
 
-```bash
-python3 export_claude_chats.py
-```
+The archive holds whatever you discussed with Claude: proprietary source, file paths, customer data, credentials pasted into prompts. The bundled `.gitignore` excludes every directory the exporter writes, so a fork stays code-only.
 
-The backfill pass restores every session listed in `manifest.json` from its archived `raw.json`. The summary line reports how many came back:
-
-```
-Sessions found: 23 | rendered: 2 | unchanged (skipped): 21 | restored from archive: 28 | failed: 0
-Total sessions in index: 51
-```
-
-As long as `manifest.json` and `sessions/` are intact, nothing is lost.
-
-## Privacy
-
-**Your exported conversations are private. Do not commit them.**
-
-The archive contains whatever you discussed with Claude — proprietary source, file paths, customer data, credentials pasted into prompts. The included `.gitignore` excludes every directory the exporter writes (`sessions/`, `index/`, `extracts/`, `timeline/`, `index.html`, `manifest.json`), so a fork of this repo stays code-only.
-
-If you point `--output` somewhere else, add that path to `.gitignore` too. Before your first push, confirm:
+If you point `--output` elsewhere, ignore that path too. Before your first push:
 
 ```bash
 git status --porcelain     # should list source files only
@@ -116,10 +157,14 @@ git status --porcelain     # should list source files only
 
 To back up the archive itself, use a **private** repo or ordinary file backup — never a public one.
 
-## Contributing
+---
 
-Issues and PRs welcome. Please never include real transcript content in a bug report — a redacted snippet or the session structure is enough.
+## 🤝 Contributing
 
-## License
+Issues and PRs welcome. Please never paste real transcript content into a bug report — a redacted snippet or the structure alone is plenty.
+
+## 📄 License
 
 MIT — see [LICENSE](LICENSE).
+
+<div align="center"><br><sub>Your conversations are work. Keep them.</sub></div>

@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 
-from .models import Session
+from .models import Session, turn_kind
 from .util import fmt_duration, truncate
 
 TEXT_LIMIT = 8000
@@ -11,15 +11,18 @@ RESULT_LIMIT = 3000
 INPUT_LIMIT = 2000
 
 
+_LANE_LABEL = {"user": "You", "assistant": "Claude", "system": "System", "tool": "Tool result"}
+
+
 def _role_label(turn) -> str:
-    prefix = "Subagent " if turn.is_sidechain else ""
-    if turn.role == "system":
-        return f"{prefix}System"
-    if turn.is_compact_summary:
-        return f"{prefix}System (Compacted Summary)"
-    if turn.is_meta:
-        return f"{prefix}System"
-    return f"{prefix}{'User' if turn.role == 'user' else 'Assistant'}"
+    kind = turn_kind(turn)
+    label = _LANE_LABEL[kind]
+    if kind == "system":
+        if turn.is_compact_summary:
+            label = "System (compacted summary)"
+        elif turn.is_meta:
+            label = "System (injected context)"
+    return f"Subagent — {label}" if turn.is_sidechain else label
 
 
 def _render_tool_use(block: dict) -> list[str]:
@@ -64,8 +67,7 @@ def render_session_markdown(session: Session) -> str:
     lines: list[str] = []
     lines.append(f"# {session.title}")
     lines.append("")
-    n_user = sum(1 for t in session.turns if t.role == "user")
-    n_assistant = sum(1 for t in session.turns if t.role == "assistant")
+    n_user, n_assistant = session.counts
     lines.append("| Field | Value |")
     lines.append("|---|---|")
     lines.append(f"| Session ID | `{session.session_id}` |")
