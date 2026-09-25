@@ -435,6 +435,9 @@ function snippet(text, term) {
     pos = hit + term.length;
   }
   out += esc(slice.slice(pos));
+  // Messages are Markdown; showing raw ** and ` markers in a preview is just
+  // noise. Stripped after highlighting so it can't disturb the <mark> tags.
+  out = out.replace(/\\*\\*/g, '').replace(/(^|[\\s(])`([^`\\n]+)`/g, '$1$2');
   return (start > 0 ? '…' : '') + out + (end < text.length ? '…' : '');
 }
 

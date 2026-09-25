@@ -34,6 +34,11 @@ body { padding: 0 0 6rem; }
 
 .doc { max-width: 860px; margin: 0 auto; padding: 0 1.25rem; }
 
+/* Inside the browser shell the frame already shows the title and a theme
+   toggle, so the page's own masthead would be a second copy of both. */
+html.embedded .masthead { display: none; }
+html.embedded .hero { padding-top: 1.4rem; }
+
 .masthead {
   position: sticky; top: 0; z-index: 20;
   background: color-mix(in srgb, var(--paper) 88%, transparent);
@@ -399,7 +404,13 @@ def render_session_html(session: Session) -> str:
 }})();
 </script>"""
 
+    # Set before first paint so the masthead never flashes in the frame.
+    embed_check = (
+        "<script>try{if(window.self!==window.top)"
+        "document.documentElement.className+=' embedded';}catch(e){}</script>"
+    )
+
     return (
-        f"<!doctype html><html><head>{head(title, _CSS)}</head>"
+        f"<!doctype html><html><head>{head(title, _CSS)}{embed_check}</head>"
         f"<body>{masthead}{''.join(body)}{totop}{script}</body></html>"
     )

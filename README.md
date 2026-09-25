@@ -37,9 +37,24 @@ Then open **`index.html`**. That's the whole setup — Python 3.9+, zero depende
 
 Every later run picks up what's new and leaves the rest alone. **Once a conversation is archived, it stays — even after Claude Code deletes the original.**
 
+## 👀 See it before you run it
+
+Don't want to point it at your own chats yet? Build a demo archive from invented transcripts:
+
+```bash
+python3 tools/make_demo.py --open
+```
+
+That writes `docs/demo/` — eight fictional sessions rendered by the **same code** that renders a real archive. Nothing in it touches `~/.claude`. It's also the right way to grab screenshots or check a UI change without exposing your own work.
+
 ---
 
 ## 🖥️ What you get
+
+<div align="center">
+<img src="docs/screenshot-browser.png" alt="Session browser" width="100%">
+<img src="docs/screenshot-search.png" alt="Full-text search" width="100%">
+</div>
 
 ### 📚 A browser for everything
 
@@ -49,11 +64,11 @@ Open `index.html` for a two-pane reader: sessions grouped by **Today / Yesterday
 
 Messages render as **actual prose** — headings, lists, tables, and syntax-styled code — not walls of preformatted text. Three lanes stay visually distinct so you always know who said what:
 
-| Lane | Appearance |
-|---|---|
-| 🧑 **You** | Filled card with an accent border — the thing you scan for |
-| 🤖 **Claude** | Clean prose, unadorned |
-| ⚙️ **Tools** | Muted monospace folds, collapsed by default, each showing its own output |
+| Lane          | Appearance                                                               |
+| ------------- | ------------------------------------------------------------------------ |
+| 🧑 **You**    | Filled card with an accent border — the thing you scan for               |
+| 🤖 **Claude** | Clean prose, unadorned                                                   |
+| ⚙️ **Tools**  | Muted monospace folds, collapsed by default, each showing its own output |
 
 Tool results are nested **inside the call that produced them** — so a 500-turn session scans in seconds, and nothing machine-generated is ever mislabelled as something you typed.
 
@@ -65,15 +80,15 @@ Tool results are nested **inside the call that produced them** — so a 500-turn
 
 Everything is JSON and Markdown you can grep, diff, or feed to other tools:
 
-| Path | Contents |
-|---|---|
-| `sessions/<project>/<id>/` | `raw.json`, `conversation.md`, `conversation.html` |
-| `index/session_index.{json,md}` | One row per session — title, project, duration, links |
-| `extracts/tool_invocations.{json,md}` | Every tool call, matched with its result |
-| `extracts/file_modifications.{json,md}` | Every Edit / Write / MultiEdit / NotebookEdit |
-| `extracts/bash_commands.{json,md}` | Every Bash call with stdout and stderr |
-| `extracts/architectural_decisions.{json,md}` | Heuristically surfaced decision points |
-| `timeline/timeline.{json,md}` | All of the above, merged and sorted by date |
+| Path                                         | Contents                                              |
+| -------------------------------------------- | ----------------------------------------------------- |
+| `sessions/<project>/<id>/`                   | `raw.json`, `conversation.md`, `conversation.html`    |
+| `index/session_index.{json,md}`              | One row per session — title, project, duration, links |
+| `extracts/tool_invocations.{json,md}`        | Every tool call, matched with its result              |
+| `extracts/file_modifications.{json,md}`      | Every Edit / Write / MultiEdit / NotebookEdit         |
+| `extracts/bash_commands.{json,md}`           | Every Bash call with stdout and stderr                |
+| `extracts/architectural_decisions.{json,md}` | Heuristically surfaced decision points                |
+| `timeline/timeline.{json,md}`                | All of the above, merged and sorted by date           |
 
 Session UUIDs and original timestamps survive everywhere — filenames, table rows, HTML anchors.
 

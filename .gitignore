@@ -19,6 +19,10 @@
 /export/
 /archive/
 
+# Generated demo archive — synthetic, but regenerate it rather than commit it:
+#   python3 tools/make_demo.py
+/docs/demo/
+
 # ---------------------------------------------------------------------------
 # Python
 # ---------------------------------------------------------------------------
