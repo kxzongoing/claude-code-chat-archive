@@ -1,0 +1,58 @@
+# ---------------------------------------------------------------------------
+# YOUR CONVERSATIONS LIVE HERE. NEVER COMMIT THESE.
+#
+# Running the exporter writes your actual Claude Code transcripts into this
+# checkout. They routinely contain source code, file paths, API keys pasted
+# into prompts, customer data, and private research. Everything the exporter
+# generates is ignored below. If you add an output path, ignore it too.
+# ---------------------------------------------------------------------------
+/sessions/
+/index/
+/extracts/
+/timeline/
+/index.html
+/manifest.json
+/manifest.json.tmp
+
+# Exports written somewhere other than the checkout default
+/out/
+/export/
+/archive/
+
+# ---------------------------------------------------------------------------
+# Python
+# ---------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+build/
+dist/
+*.egg-info/
+.venv/
+venv/
+env/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# ---------------------------------------------------------------------------
+# Editors / OS
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*~
+
+# ---------------------------------------------------------------------------
+# Credentials — defence in depth; this tool never needs any of these
+# ---------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets.json
+credentials.json
